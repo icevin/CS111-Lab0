@@ -7,5 +7,16 @@ lab0.c          - C source
 Makefile        - Makefile
 backtrace.png   - Shows a segfault and associated stack-trace
 breakpoint.png  - Shows a breakpoint and variable inspection
+smoke.sh        - Smoke test script, used by make check
 
 Test cases:
+1)  --segfault option causes segfault
+2)  --segfault combined with --catch properly catches segfault
+3)  --catch option exits cleanly
+4)  --catch option copies stdin to stdout properly
+5)  --input from a good file causes no errors
+6)  --input from a file copies to stdout properly
+5)  --input from a good file and output to a file causes no errors
+6)  --input from a file copies to an output file properly
+7)  input from stdin to a good output file causes no errors
+8)  input from stdin properly copies to an output file
