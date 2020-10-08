@@ -1,3 +1,11 @@
 NAME: Kevin Tang
 EMAIL: kevintang2023@ucla.edu
 ID: 805419480
+
+Files:
+lab0.c          - C source
+Makefile        - Makefile
+backtrace.png   - Shows a segfault and associated stack-trace
+breakpoint.png  - Shows a breakpoint and variable inspection
+
+Test cases:
