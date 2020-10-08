@@ -1,24 +1,30 @@
+#include <errno.h>
+#include <fcntl.h>
+#include <getopt.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <string.h>
-#include <getopt.h>
-
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 void segfault();
 
 void seghandler();
 
+void handleErr(int err);
+
 int main(int argc, char **argv) {
     int c;
 
-    char *input_filename;
-    char *output_filename;
+    char *input_filename  = "";
+    char *output_filename = "";
 
     int catch = 0;
     int seg   = 0;
 
-    for(;;) {
+    for (;;) {
         static struct option long_options[] = {
             {"input", required_argument, 0, 'a'},
             {"output", required_argument, 0, 'b'},
@@ -36,23 +42,14 @@ int main(int argc, char **argv) {
 
         switch (c) {
             case 0:
-                // /* If this option set a flag, do nothing else now. */
-                // if (long_options[option_index].flag != 0)
-                //     break;
-                // printf("option %s", long_options[option_index].name);
-                // if (optarg)
-                //     printf(" with arg %s", optarg);
-                // printf("\n");
                 break;
 
             case 'a':
-                // printf("input length: %d", strlen(optarg));
                 input_filename = (char *)malloc(sizeof(optarg));
                 strcpy(input_filename, optarg);
                 break;
 
             case 'b':
-                // puts("option -b\n");
                 output_filename = (char *)malloc(sizeof(optarg));
                 strcpy(output_filename, optarg);
                 break;
@@ -66,7 +63,7 @@ int main(int argc, char **argv) {
                 break;
 
             default:
-                abort();
+                exit(1);
         }
     }
 
@@ -76,17 +73,48 @@ int main(int argc, char **argv) {
     if (seg)
         segfault();
 
-    if (input_filename) {
-        printf(input_filename);
+    int input_fd;
+    int output_fd;
+
+    if (strcmp(input_filename, "") != 0) {
+        input_fd = open(input_filename, O_RDONLY);
+        if (input_fd < 0) {
+            fprintf(stderr, "Error: Failed to open --input file %s: %s\n", input_filename, strerror(errno));
+            exit(2);
+        } else {
+            close(0);
+            dup(input_fd);
+            close(input_fd);
+        }
+    }
+
+    if (strcmp(output_filename, "") != 0) {
+        output_fd = open(output_filename, O_CREAT | O_RDWR | O_TRUNC | O_APPEND, 0666);
+        if (output_fd < 0) {
+            fprintf(stderr, "Error: Failed to open/create --output file %s: %s\n", output_filename, strerror(errno));
+            exit(3);
+        } else {
+            close(1);
+            dup(output_fd);
+            close(output_fd);
+        }
     }
 
     /* Print any remaining command line arguments (not options). */
     if (optind < argc) {
-        printf("non-option ARGV-elements: ");
+        printf("Error: non-option argv elements: ");
         while (optind < argc)
             printf("%s ", argv[optind++]);
         putchar('\n');
+        exit(1);
     }
+
+    int flag     = 0;
+    char *buffer = (char *)malloc(sizeof(char));
+    do {
+        flag = read(0, buffer, 1);
+        write(1, buffer, 1);
+    } while (flag != 0);
 
     if (!input_filename)
         free(input_filename);
@@ -98,10 +126,34 @@ int main(int argc, char **argv) {
 
 void segfault() {
     int *dum = NULL;
-    *dum = 0;
+    *dum     = 0;
 }
 
 void seghandler() {
     fprintf(stderr, "Error: Segmentation fault\n");
     exit(4);
+}
+
+void handleErr(int err) {
+    switch (err) {
+        case 1:
+            fprintf(stderr, "Operation not permitted\n");
+            break;
+        case 2:
+            fprintf(stderr, "No such file or directory\n");
+            break;
+        case 13:
+            fprintf(stderr, "Permission denied\n");
+            break;
+        case 17:
+            fprintf(stderr, "File exists\n");
+            break;
+        case 27:
+            fprintf(stderr, "File too large\n");
+            break;
+
+        default:
+            fprintf(stderr, "No additional information available.\n");
+            break;
+    }
 }
