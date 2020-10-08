@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 #include <getopt.h>
+
+
+void segfault();
+
+void seghandler();
 
 int main(int argc, char **argv) {
     int c;
@@ -12,7 +18,7 @@ int main(int argc, char **argv) {
     int catch = 0;
     int seg   = 0;
 
-    while (true) {
+    for(;;) {
         static struct option long_options[] = {
             {"input", required_argument, 0, 'a'},
             {"output", required_argument, 0, 'b'},
@@ -65,10 +71,10 @@ int main(int argc, char **argv) {
     }
 
     if (catch)
-        puts("catch flag is set");
+        signal(SIGSEGV, seghandler);
 
     if (seg)
-        puts("segfault flag is set");
+        segfault();
 
     if (input_filename) {
         printf(input_filename);
@@ -88,4 +94,14 @@ int main(int argc, char **argv) {
     if (!output_filename)
         free(output_filename);
     exit(0);
+}
+
+void segfault() {
+    int *dum = NULL;
+    *dum = 0;
+}
+
+void seghandler() {
+    fprintf(stderr, "Error: Segmentation fault\n");
+    exit(4);
 }

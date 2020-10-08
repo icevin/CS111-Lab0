@@ -1,4 +1,5 @@
-default: gcc -g main.c -o lab0
+default: 
+	gcc -g -Wall -Wextra main.c -o lab0
 
 dist: lab0.tgz
 submission_files = main.c Makefile backtrace.png breakpoint.png README
