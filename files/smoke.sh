@@ -20,7 +20,7 @@ then
     echo "Error: with --segfault & --catch combination"
 fi
 
-dd if=/dev/urandom of=junk.test bs=1024 count=1 
+dd if=/dev/urandom of=junk.test bs=1024 count=1 > /dev/null 2>/dev/null
 
 # CATCH, STDIN, STDOUT
 ./lab0 --catch < junk.test > /dev/null  2>/dev/null

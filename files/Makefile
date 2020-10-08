@@ -2,7 +2,7 @@ default:
 	@gcc -g -Wall -Wextra lab0.c -o lab0
 
 dist: lab0.tgz
-submission_files = lab0.c Makefile README backtrace.png breakpoint.png
+submission_files = lab0.c Makefile README backtrace.png breakpoint.png smoke.sh
 
 lab0.tgz: $(submission_files)
 	tar -czf lab0-805419480.tar.gz $(submission_files)
@@ -13,5 +13,5 @@ clean:
 	rm -f *.tar.gz lab0 *.txt *.test
 
 check: default
-	@./smoke.sh 2>/dev/null
-	@rm -f *.test
+	@./smoke.sh 2> /dev/null
+	@rm -f *.test > /dev/null 2> /dev/null
